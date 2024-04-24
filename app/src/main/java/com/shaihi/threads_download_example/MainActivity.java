@@ -10,12 +10,9 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -33,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         progressBar = findViewById(R.id.progressBar);
         filePath = getExternalFilesDir(null) + "/downloadedfile.zip";
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        //We do not need to ask for permission in API 30 and above because we are writing to our App's Storage
+        //ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         downloadFile();
     }
 
@@ -80,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         File file = new File(filePath);
         if (file.exists()) {
+            //This is not a good method to clean the file since onDestroy is not always called...
             file.delete();
             Log.i("ProgressBar App", "File deleted");
         }
