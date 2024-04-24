@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_centerInParent="true"
+        android:scaleY="8"
         android:progressTint="#7C618DFB"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
