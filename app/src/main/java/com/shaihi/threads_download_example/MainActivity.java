@@ -116,9 +116,9 @@ public class MainActivity extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, "Download complete", Toast.LENGTH_SHORT).show());
+                        Toast.makeText(MainActivity.this, "Download complete", Toast.LENGTH_SHORT).show();
                     }
-                };
+                });
                 File file = new File(filePath);
                 if (file.exists()) {
                     int file_size = Integer.parseInt(String.valueOf(file.length()/(1024*1024)));
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
                 Log.e("ProgressBar App", "Error: " + e.getMessage());
