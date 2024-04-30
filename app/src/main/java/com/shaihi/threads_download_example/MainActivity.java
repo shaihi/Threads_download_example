@@ -73,70 +73,73 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloadFile() {
         // A new thread is created to handle the heavy and potentially long task of downloading a file
-        new Thread(() -> {
-            try {
-                //**************************************************
-                // This block of code handles downloading from a URL
-                //**************************************************
-                URL url = new URL(downloadUrl);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                int totalSize = connection.getContentLength();
-                int downloadedSize = 0;
-
-                byte[] buffer = new byte[1024];
-                int bufferLength;
-
-                InputStream inputStream = connection.getInputStream();
-                FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-
-                Log.i("ProgressBar App", "starting file download of " + downloadUrl);
-                while ((bufferLength = inputStream.read(buffer)) > 0) {
-                    fileOutputStream.write(buffer, 0, bufferLength);
-                    downloadedSize += bufferLength;
-                    int finalDownloadedSize = downloadedSize;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
                     //**************************************************
-                    // Until the line above it is code for handling url download
+                    // This block of code handles downloading from a URL
                     //**************************************************
+                    URL url = new URL(downloadUrl);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    int totalSize = connection.getContentLength();
+                    int downloadedSize = 0;
 
-                    //The below is inserting a message (Runnable) to the main thread queue to update the progress bar
+                    byte[] buffer = new byte[1024];
+                    int bufferLength;
+
+                    InputStream inputStream = connection.getInputStream();
+                    FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+
+                    Log.i("ProgressBar App", "starting file download of " + downloadUrl);
+                    while ((bufferLength = inputStream.read(buffer)) > 0) {
+                        fileOutputStream.write(buffer, 0, bufferLength);
+                        downloadedSize += bufferLength;
+                        int finalDownloadedSize = downloadedSize;
+                        //**************************************************
+                        // Until the line above it is code for handling url download
+                        //**************************************************
+
+                        //The below is inserting a message (Runnable) to the main thread queue to update the progress bar
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setProgress((int) ((finalDownloadedSize * 100L) / totalSize));
+                            }
+                        });
+
+                        //I placed this sleep in case the download is too quick to see the progress
+                        //Thread.sleep(30);
+                    }
+                    fileOutputStream.close();
+                    inputStream.close();
+                    //Each activity related to UI such as Toast needs to be done on the main thread
+                    //and so we use the handler to send the message to the main Thread
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            progressBar.setProgress((int) ((finalDownloadedSize * 100L) / totalSize));
+                            Toast.makeText(MainActivity.this, "Download complete", Toast.LENGTH_SHORT).show();
                         }
                     });
-
-                    //I placed this sleep in case the download is too quick to see the progress
-                    //Thread.sleep(30);
-                }
-                fileOutputStream.close();
-                inputStream.close();
-                //Each activity related to UI such as Toast needs to be done on the main thread
-                //and so we use the handler to send the message to the main Thread
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(MainActivity.this, "Download complete", Toast.LENGTH_SHORT).show();
+                    File file = new File(filePath);
+                    if (file.exists()) {
+                        int file_size = Integer.parseInt(String.valueOf(file.length()/(1024*1024)));
+                        Log.i("ProgressBar App", "Download Complete. File size is "+String.valueOf(file_size) +
+                                "MB/ Buffer Length " + String.valueOf(downloadedSize/(1024*1024)) + "MB");
+                    } else {
+                        Log.i("ProgressBar App", "Download Complete. but no such file ");
                     }
-                });
-                File file = new File(filePath);
-                if (file.exists()) {
-                    int file_size = Integer.parseInt(String.valueOf(file.length()/(1024*1024)));
-                    Log.i("ProgressBar App", "Download Complete. File size is "+String.valueOf(file_size) +
-                            "MB/ Buffer Length " + String.valueOf(downloadedSize/(1024*1024)) + "MB");
-                } else {
-                    Log.i("ProgressBar App", "Download Complete. but no such file ");
+                } catch (Exception e) {
+                    //Each activity related to UI such as Toast needs to be done on the main thread
+                    //and so we use the handler to send the message to the main Thread
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    Log.e("ProgressBar App", "Error: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                //Each activity related to UI such as Toast needs to be done on the main thread
-                //and so we use the handler to send the message to the main Thread
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-                Log.e("ProgressBar App", "Error: " + e.getMessage());
             }
         }).start();
     }
